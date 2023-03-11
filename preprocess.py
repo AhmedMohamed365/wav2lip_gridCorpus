@@ -97,6 +97,8 @@ def mp_handler(job):
 def main(args):
     print('Started processing for {} with {} GPUs'.format(args.data_root, args.ngpu))
 
+    file = open("file.txt","r")
+    videosPaths = file.readlines()
     filelist = videosPaths
 
     jobs = [(vfile, args, i % args.ngpu) for i, vfile in enumerate(filelist)]
