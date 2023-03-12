@@ -24,10 +24,8 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--ngpu', help='Number of GPUs across which to run in parallel', default=1, type=int)
 parser.add_argument('--batch_size', help='Single GPU Face detection batch size', default=32, type=int)
-parser.add_argument("--data_root", help="Root folder of the LRS2 dataset", default="/kaggle/working/Data",
-                    required=False)
-parser.add_argument("--preprocessed_root", help="Root folder of the preprocessed dataset",
-                    default="/kaggle/working/DataSet", required=False)
+parser.add_argument("--data_root", help="Root folder of the LRS2 dataset", required=True)
+parser.add_argument("--preprocessed_root", help="Root folder of the preprocessed dataset", required=True)
 
 args = parser.parse_args()
 
@@ -59,6 +57,7 @@ def process_video_file(vfile, args, gpu_id):
     batches = [frames[i:i + args.batch_size] for i in range(0, len(frames), args.batch_size)]
 
     i = -1
+
     for fb in batches:
         preds = fa[gpu_id].get_detections_for_batch(np.asarray(fb))
 
@@ -97,10 +96,8 @@ def mp_handler(job):
 def main(args):
     print('Started processing for {} with {} GPUs'.format(args.data_root, args.ngpu))
 
-    file = open("file.txt","r")
-    videosPaths = file.readlines()
-    filelist = videosPaths
-
+    filelist = glob(path.join(args.data_root, '*/*'))
+    # print(filelist[0])
     jobs = [(vfile, args, i % args.ngpu) for i, vfile in enumerate(filelist)]
     p = ThreadPoolExecutor(args.ngpu)
     futures = [p.submit(mp_handler, j) for j in jobs]
